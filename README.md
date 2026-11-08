@@ -1,3 +1,10 @@
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.14-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Selenium-4.x-green?style=for-the-badge&logo=selenium&logoColor=white" alt="Selenium">
+  <img src="https://img.shields.io/badge/Pytest-9.2-red?style=for-the-badge&logo=pytest&logoColor=white" alt="Pytest">
+  <img src="https://img.shields.io/badge/Pattern-Page%20Object%20Model-blueviolet?style=for-the-badge" alt="POM">
+</p>
+
 # Selenium + Pytest Automation Project (QA.GURU Module 4)
 
 Учебный проект по автоматизации тестирования UI на Python с использованием Selenium и Pytest. 
@@ -28,3 +35,10 @@
 7.  **Пропуск тестов (`@pytest.mark.skip`):** Отключение неготовых тестов.
 8.  **Кастомный хук (`pytest_runtest_makereport`):** Автоматическое создание скриншотов при падении тестов (сохраняются в папку `screenshots/`).
 
+## ⚙️ Установка и запуск
+
+1. Клонируйте репозиторий и перейдите в папку проекта:
+   ```bash
+   git clone https://github.com/Stanislav-Chekin/selenium_pytest_module_4.git
+   cd selenium_pytest_module_4
+   
