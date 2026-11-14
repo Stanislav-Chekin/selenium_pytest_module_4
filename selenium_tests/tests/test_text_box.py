@@ -1,8 +1,10 @@
+from timeit import default_number
+
 import pytest
+import allure  # ДОБАВИЛИ ИМПОРТ
 from dataclasses import dataclass
 
-# --- ФИШКА 1: Data Class для тестовых данных (DDT) ---
-# Делает параметризацию чище и нагляднее
+
 @dataclass
 class FormData:
     name: str
@@ -12,7 +14,9 @@ class FormData:
 
 
 # --- 1. Позитивные сценарии (Валидные данные) ---
-@pytest.mark.smoke  # Маркер: Быстрый дымовой тест
+@pytest.mark.smoke
+@allure.story("Позитивные сценарии")
+@allure.title("Успешная отправка формы с валидными данными")
 @pytest.mark.parametrize("data", [
     FormData("John Doe", "john@example.com", "123 Elm St", "456 Oak St"),
     FormData("Иван Иванов", "ivan@mail.ru", "ул. Ленина, д. 1", "ул. Пушкина, д. 2"),
@@ -21,7 +25,6 @@ class FormData:
     FormData("   John   ", "spaces@test.com", "  Street 1  ", "  Street 2  "),
 ])
 def test_positive_form_submission(text_box_page, data):
-    # Используем фикстуру text_box_page, которую мы создали в conftest.py
     output = text_box_page.open().fill_form(
         data.name, data.email, data.cur_addr, data.perm_addr
     ).submit().get_output_data()
@@ -33,8 +36,10 @@ def test_positive_form_submission(text_box_page, data):
     assert output["perm_addr"] == data.perm_addr.strip()
 
 
-# --- 2. Частичное заполнение обязательных/необязательных полей ---
-@pytest.mark.regression  # Маркер: Регрессионный тест
+# --- 2. Частичное заполнение ---
+@pytest.mark.regression
+@allure.story("Частичное заполнение")
+@allure.title("Отправка формы с частично заполненными данными")
 @pytest.mark.parametrize("name, email, cur_addr, perm_addr", [
     ("Only Name", "", "", ""),
     ("", "only@email.com", "", ""),
@@ -54,6 +59,8 @@ def test_partial_form_submission(text_box_page, name, email, cur_addr, perm_addr
 
 # --- 3. Негативные сценарии (Невалидный Email) ---
 @pytest.mark.regression
+@allure.story("Негативные сценарии")
+@allure.title("Валидация невалидного Email: {invalid_email}")
 @pytest.mark.parametrize("invalid_email", [
     "plainaddress",
     "@no-local-part.com",
@@ -69,8 +76,10 @@ def test_invalid_email_validation(text_box_page, invalid_email):
     assert output is None or text_box_page.is_email_error_present(), f"Email '{invalid_email}' не должен быть принят системой"
 
 
-# --- 4. Граничные значения и нагрузка на длину полей (Длинные строки) ---
+# --- 4. Граничные значения ---
 @pytest.mark.regression
+@allure.story("Граничные значения")
+@allure.title("Ввод длинной строки в поле: {field_type}")
 @pytest.mark.parametrize("field_type, long_string", [
     ("name", "A" * 1000),
     ("email", f"{'b' * 64}@example.com"),
@@ -85,8 +94,10 @@ def test_long_input_fields(text_box_page, field_type, long_string):
     assert output is not None, f"Форма не справилась с длинной строкой в поле {field_type}"
 
 
-# --- 5. Безопасность и спец-инъекции (XSS, SQLi, Эмодзи) ---
+# --- 5. Безопасность ---
 @pytest.mark.regression
+@allure.story("Безопасность")
+@allure.title("Ввод спецсимволов/инъекций: {security_payload}")
 @pytest.mark.parametrize("security_payload", [
     pytest.param("<script>alert('xss')</script>", marks=pytest.mark.xfail(reason="Сайт защищен от XSS, текст не выводится")),
     "1' OR '1'='1",
@@ -106,6 +117,8 @@ def test_security_and_special_inputs(text_box_page, security_payload):
 
 # --- 6. Пустая форма ---
 @pytest.mark.smoke
+@allure.story("Позитивные сценарии")
+@allure.title("Отправка пустой формы")
 def test_empty_form_submission(text_box_page):
     output = text_box_page.open().submit().get_output_data()
 
@@ -114,13 +127,14 @@ def test_empty_form_submission(text_box_page):
         assert output["email"] == ""
 
 
-# --- 7. Демонстрация Skip (Фишка для домашки) ---
+# --- 7. Демонстрация Skip ---
 @pytest.mark.skip(reason="Тест временно отключен, так как функционал еще в разработке")
+@allure.title("Проверка Captcha (пропущен)")
 def test_captcha_validation(text_box_page):
-    # Этот тест не запустится, PyTest его пропустит
     assert True
 
-# Запустить pytest selenium_tests/tests/test_text_box.py -v
-# Запуск только быстрых Smoke-тестов pytest selenium_tests/tests/test_text_box.py -m smoke -v
-# Запуск только регрессионных тестов pytest selenium_tests/tests/test_text_box.py -m regression -v
-# Запуск конкретного теста по имени (Демонстрация фильтрации -k) pytest selenium_tests/tests/test_text_box.py -k "invalid_email" -v
+
+# Установить плагин pip install allure-pytest
+# Запустить pytest selenium_tests/tests/test_text_box.py --alluredir=allure-results -v
+# Сгенерировать отчет allure serve allure-results
+

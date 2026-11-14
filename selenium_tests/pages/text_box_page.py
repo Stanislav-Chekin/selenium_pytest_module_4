@@ -1,3 +1,4 @@
+import allure  # ДОБАВИЛИ ИМПОРТ
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -7,14 +8,12 @@ from selenium.common.exceptions import TimeoutException
 class TextBoxPage:
     URL = "https://qa-guru.github.io/one-page-form/text-box.html"
 
-    # Локаторы элементов формы
     FULL_NAME = (By.ID, "userName")
     EMAIL = (By.ID, "userEmail")
     CURRENT_ADDRESS = (By.ID, "currentAddress")
     PERMANENT_ADDRESS = (By.ID, "permanentAddress")
     SUBMIT_BUTTON = (By.ID, "submit")
 
-    # Локаторы результирующего блока (вывода данных)
     OUTPUT_BOX = (By.ID, "output")
     OUTPUT_NAME = (By.ID, "name")
     OUTPUT_EMAIL = (By.ID, "email")
@@ -24,10 +23,12 @@ class TextBoxPage:
     def __init__(self, driver):
         self.driver = driver
 
+    @allure.step("Открыть страницу TextBox")  # ДОБАВИЛИ ШАГ
     def open(self):
         self.driver.get(self.URL)
-        return self  # Fluent Interface
+        return self
 
+    @allure.step("Заполнить форму: Имя={name}, Email={email}, Адрес={cur_addr}, Прописка={perm_addr}")  # ДОБАВИЛИ ШАГ
     def fill_form(self, name=None, email=None, cur_addr=None, perm_addr=None):
         if name is not None:
             full_name_field = self.driver.find_element(*self.FULL_NAME)
@@ -39,14 +40,16 @@ class TextBoxPage:
             self.driver.find_element(*self.CURRENT_ADDRESS).send_keys(cur_addr)
         if perm_addr is not None:
             self.driver.find_element(*self.PERMANENT_ADDRESS).send_keys(perm_addr)
-        return self  # Fluent Interface
+        return self
 
+    @allure.step("Нажать кнопку Submit")  # ДОБАВИЛИ ШАГ
     def submit(self):
         button = self.driver.find_element(*self.SUBMIT_BUTTON)
         self.driver.execute_script("arguments[0].scrollIntoView(true);", button)
         button.click()
-        return self  # Fluent Interface
+        return self
 
+    @allure.step("Получить данные из блока результатов")  # ДОБАВИЛИ ШАГ
     def get_output_data(self):
         try:
             WebDriverWait(self.driver, 2).until(
@@ -62,6 +65,7 @@ class TextBoxPage:
 
         return {"name": name, "email": email, "cur_addr": cur_addr, "perm_addr": perm_addr}
 
+    @allure.step("Проверить наличие ошибки валидации Email")  # ДОБАВИЛИ ШАГ
     def is_email_error_present(self):
         email_field = self.driver.find_element(*self.EMAIL)
         field_class = email_field.get_attribute("class")
